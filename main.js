@@ -1,11 +1,11 @@
 const me = character
 var attack_mode=true
 
-const base_url = "https://raw.githubusercontent.com/JesseTWolf/adventureland/master/main.js";
+const base_url = "https://raw.githubusercontent.com/JesseTWolf/adventureland/master/main.js"
 const script_name = "Ranger"
 
 function update_script() {
-    fetch(base_url).then(resp => resp.text()).then(script => {
+    fetch(base_url+"?"+Date.now()).then(resp => resp.text()).then(script => {
         parent.api_call("save_code", { code: script, slot: 1, name: script_name, auto: true, electron: true }, { promise: true });
     })
 }
