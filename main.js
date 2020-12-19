@@ -4,29 +4,6 @@ var attack_mode=true
 const base_url = "https://raw.githubusercontent.com/JesseTWolf/adventureland/master/main.js"
 const script_name = "Ranger"
 
-function update_script() {
-    fetch(base_url+"?"+Date.now()).then(resp => resp.text()).then(script => {
-        parent.api_call("save_code", { code: script, slot: 1, name: script_name, auto: true, electron: true }, { promise: true });
-    })
-}
-
-function kite(target) {
-  if(target) {
-    let safeDistance = target.range * 1.1;
-    let unsafeDistance = target.range * 0.5;
-    let targetDistance = distance(me, target);
-
-    if (targetDistance < safeDistance && targetDistance > unsafeDistance) {
-      xmove(me.real_x + (me.real_x - target.x),
-        me.real_y + (me.real_y - target.y));
-    }
-    if (distance(me, target) < unsafeDistance) {
-      xmove(me.real_x - (me.real_x - target.x) + minTargetDist,
-        me.real_y - (me.real_y - target.y) + minTargetDist)
-    }
-  }
-}
-
 setInterval(function(){
 
 	if(me.rip) respawn()
@@ -43,7 +20,7 @@ setInterval(function(){
 	//if (!attack_mode || character.rip || is_moving(character)) return;
 
 	//var target= get_targeted_monster();
-	var specificTarget=get_nearest_monster({type:"goo"})
+	var specificTarget=get_nearest_monster({type:"Snowman"})
 	if (!specificTarget)
 	{
 		specificTarget=get_nearest_monster({min_xp:100,max_att:120});
@@ -70,3 +47,30 @@ setInterval(function(){
 	}
 
 },1000/4); // Loops every 1/4 seconds.
+
+function update_script() {
+    fetch(base_url+"?"+Date.now()).then(resp => resp.text()).then(script => {
+        parent.api_call("save_code", { code: script, slot: 1, name: script_name, auto: true, electron: true }, { promise: true });
+    })
+}
+
+function kite(target) {
+  if(target) {
+    let safeDistance = target.range * 1.1;
+    let unsafeDistance = target.range * 0.5;
+    let targetDistance = distance(me, target);
+
+    if (targetDistance < safeDistance && targetDistance > unsafeDistance) {
+      xmove(me.real_x + (me.real_x - target.x),
+        me.real_y + (me.real_y - target.y));
+    }
+    if (distance(me, target) < unsafeDistance) {
+      xmove(me.real_x - (me.real_x - target.x) + minTargetDist,
+        me.real_y - (me.real_y - target.y) + minTargetDist)
+    }
+  }
+}
+
+function find_D3lphes() {
+  smart_move("D3lphes");
+}
