@@ -10,6 +10,23 @@ function update_script() {
     })
 }
 
+function kite(target) {
+  if(target) {
+    let safeDistance = target.range * 1.1;
+    let unsafeDistance = target.range * 0.5;
+    let targetDistance = distance(me, target);
+
+    if (targetDistance < safeDistance && targetDistance > unsafeDistance) {
+      xmove(me.real_x + (me.real_x - target.x),
+        me.real_y + (me.real_y - target.y));
+    }
+    if (distance(me, target) < unsafeDistance) {
+      xmove(me.real_x - (me.real_x - target.x) + minTargetDist,
+        me.real_y - (me.real_y - target.y) + minTargetDist)
+    }
+  }
+}
+
 setInterval(function(){
 
 	if(me.rip) respawn()
