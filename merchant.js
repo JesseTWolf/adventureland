@@ -1,20 +1,25 @@
-import { checkParty } from 'http://192.168.0.95/jesse/universal.js' 
-//import * as universal from 'http://192.168.0.95/jesse/universal.js'
+//import { check_party } from 'http://192.168.0.95/jesse/universal.js' 
+import * as universal from 'http://192.168.0.95/jesse/universal.js'
 
 const me = character
 var attack_mode=true
 var currentHunt="bigbird"
-
-checkParty(me);
+var acceptingItems=false
+//check_party();
 
 setInterval(function(){
 
 	if(me.rip) respawn()
-	
-	if(me.hp < (me.max_hp - 200) || me.mp < (me.max_mp-200)) 
-		use_hp_or_mp();
-	
-	loot();
+
+	// Check my open space in inventory
+	var openSpace = me.items.length
+	// If have more then 5 spaces in my inventory let characters know.
+	me.on("cm", data => {
+		if(data.name === "Laweson" && data.message.type === "open_space_request") {
+			send_cm(openSpace)
+		}
+	})
+
 	//send cm will send a message to anyone.
 	//Ask for position, if you get a position request on the receiving end then send a message with your position.
 	

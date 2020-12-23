@@ -1,10 +1,10 @@
-import { checkParty } from 'http://192.168.0.95/jesse/universal.js'	
+import { check_party } from 'http://192.168.0.95/jesse/universal.js'	
 
 const me = character
 var attack_mode=true
 var currentHunt="bigbird"
 
-checkParty(me);
+check_party(me);
 
 setInterval(function(){
 
@@ -12,7 +12,7 @@ setInterval(function(){
 
 	use_hp_or_mp();
 	loot();
-
+	
 	//send cm will send a message to anyone.
 	//Ask for position, if you get a position request on the receiving end then send a message with your position.
 	
