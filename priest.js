@@ -9,11 +9,28 @@ checkParty(me);
 
 setInterval(function(){
 
+	var wrex = get_player("Wrex")
+	var garrus = get_player("Garrus")
+
 	if(me.rip) respawn()
 	
-	if(me.hp < (me.max_hp - 200) || me.mp < (me.max_mp-200)) 
+	if(me.mp < (me.max_mp-200)) 
 		use_hp_or_mp();
 	
+	//console.log(me.attack)
+	if((wrex) && (wrex.hp < (wrex.max_hp - me.attack)) && can_use("heal")) {
+		use_skill("heal",wrex)	
+	}
+	//else {
+		//send_cm("Wrex", {type: "position_request"})	
+	//}
+	if(garrus != null) {
+		if(garrus.hp < (garrus.max_hp - me.attack))
+			use_skill("heal",garrus)
+	}
+	//else {
+		//send_cm("")
+	//}
 	loot();
 	//send cm will send a message to anyone.
 	//Ask for position, if you get a position request on the receiving end then send a message with your position.
@@ -21,29 +38,26 @@ setInterval(function(){
 
 	if (!attack_mode || character.rip || is_moving(me)) return;
 	//if (!attack_mode || character.rip || is_moving(character)) return;
+	
 
-
-	var target
-	if (!target)
-	{
-		target=get_nearest_monster({type:"goo"}) 
-		if (target) change_target(target);
-		else
-		{
-			//party_say("No Monsters");
-			//move_and_target("squig");
-			return;
+	if(wrex) {
+		//console.log(distance(me,wrex))
+		if(distance(me,wrex) > 50) {
+			move(wrex.real_x + 40, wrex.real_y +40);
 		}
-	}
 
-	if (!is_in_range(target))
-	{	
-		move(target.real_x , (target.real_y));
-	}
-	else if (can_attack(target))
-	{
-		attack(target);
-	}
+		var target=get_entity(wrex.target)
+		if (target || (target != me.target))
+		{
+			change_target(target)
+			//console.log("Wrex's Target is : " + wrex.target)
+			//console.log("My target is: " + me.target)
+		}
+
+		if(can_use("curse") && (me.mp > 500)) {
+			use_skill("curse",target);
+		}
+	}	
 
 },1000/4); // Loops every 1/4 seconds.
 
