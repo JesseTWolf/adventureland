@@ -1,4 +1,4 @@
-import { check_party } from 'http://192.168.0.95/jesse/universal.js' 
+import { check_party, number_of_empty_slots } from 'http://192.168.0.95/jesse/universal.js' 
 //import * as universal from 'http://192.168.0.95/jesse/universal.js'
 
 const me = character
@@ -12,7 +12,18 @@ setInterval(function(){
 	if(me.rip) respawn()
 
 	// Check my open space in inventory
+	var total_empty_slots = number_of_empty_slots(me.items)
+	
+	// pack is the actual bank character. Corresponds to character.bank.
+	// str is the slot inside of the bank. 0 being the first one and 41 being the last
+	// inv being -1 means put it anywhere where there is an empty slot. If you put a a number it will instead swap with that item.
+	parent.socket.emit("bank", { operation: "swap", pack: "items0" })
+
+	//TODO: Use locate_item method to find items in my inventory.
 	//
+	//
+
+
 	// If have more then 5 spaces in my inventory let characters know.
 	/*
 	me.on("cm", data => {

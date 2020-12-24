@@ -25,7 +25,7 @@ setInterval(function(){
 
 
 	var target
-	if (!target || target.dead)
+	if (!me.ctarget || me.ctarget.dead)
 	{
 		target=get_nearest_monster({type:"tortoise"})
 		//console.log("My target is : " + me.target)

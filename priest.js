@@ -11,7 +11,7 @@ setInterval(function(){
 
 	var wrex = get_player("Wrex")
 	var garrus = get_player("Garrus")
-
+	var my_character = get_player("Mordin")
 	
 	// Kind of for each loop shenanigans. Called an arrow function
 	/*
@@ -37,8 +37,8 @@ setInterval(function(){
 	if(me.mp < (me.max_mp-200)) 
 		use_hp_or_mp();
 	
-	if((me.hp < (me.max_hp - me.attack)) && !is_on_cooldown("heal")
-		heal(me)
+	//if((me.hp < (me.max_hp - me.attack)) && !is_on_cooldown("heal")
+		//heal(my_character)
 	//console.log(me.attack)
 	if((wrex != null) && (wrex.hp < wrex.max_hp - me.attack) && !is_on_cooldown("heal")) {
 		heal(wrex)
