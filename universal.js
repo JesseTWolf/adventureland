@@ -10,10 +10,9 @@ export function open_space_message(me,target) {
 	send_cm(target, {type: "open_space_request"})
 }
 
-export function empty_inventory(me) {
-	smart_move("bank", 0, -37)
+export async function empty_inventory(me) {
+	await smart_move("bank", 0, -37)
 	
-	var openSpace = me.items.length
 	var bankerVisited = 0
 	while(bankerVisited < 3) {
 		for(var i = 0; i < 42;i++) {
@@ -23,6 +22,6 @@ export function empty_inventory(me) {
 	}
 }
 
-//export function send_to_merchant(me,numOpenSlots) {
-		
-//}
+export function number_of_empty_slots(inv) {
+	return inv.filter(item => item === null).length
+}

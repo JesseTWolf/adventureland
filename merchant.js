@@ -1,5 +1,5 @@
-//import { check_party } from 'http://192.168.0.95/jesse/universal.js' 
-import * as universal from 'http://192.168.0.95/jesse/universal.js'
+import { check_party } from 'http://192.168.0.95/jesse/universal.js' 
+//import * as universal from 'http://192.168.0.95/jesse/universal.js'
 
 const me = character
 var attack_mode=true
@@ -12,7 +12,7 @@ setInterval(function(){
 	if(me.rip) respawn()
 
 	// Check my open space in inventory
-	var openSpace = me.items.length
+	//
 	// If have more then 5 spaces in my inventory let characters know.
 	/*
 	me.on("cm", data => {
@@ -24,13 +24,15 @@ setInterval(function(){
 		}
 	})
 	*/
+	/*
 	console.log(openSpace)
 	if(openSpace > 5) {
 		send_cm("Garrus", {
 			"message": "open_space",
 			"value": openSpace
 		})
-	}	
+	}
+	*/
 
 	//send cm will send a message to anyone.
 	//Ask for position, if you get a position request on the receiving end then send a message with your position.

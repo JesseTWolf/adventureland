@@ -1,24 +1,28 @@
-import { check_party, empty_inventory } from 'http://192.168.0.95/jesse/universal.js'	
+import { check_party, empty_inventory, number_of_empty_slots } from 'http://192.168.0.95/jesse/universal.js'	
 //import * as universal from 'http://192.168.0.95/jesse/universal.js'
 
 const me = character
 var attack_mode=true
 var currentHunt="bigbird"
-var merchant_space=0
 
 check_party(me);
 
-
-
 setInterval(function(){
+
+	var delphes = get_player("D3lphes")
 
 	if(me.rip) respawn()
 
-	var open_space = me.items.length
-	//console.log("Current Open Space: " + open_space)
-	if(open_space == 1)
-		empty_inventory(me)
-
+	var total_empty_slots = number_of_empty_slots(me.items)
+	if(total_empty_slots == 0) {
+		if(smart.moving)
+			console.log("Still working on it")
+		else {
+			console.log("Made it to the bank")
+			empty_inventory(me)
+		}
+	}
+	
 	//	console.log(open_space)
 	//	send_cm("Lawson", {type: "open_space_request"})
 	//}
@@ -55,8 +59,8 @@ setInterval(function(){
 	*/
 
 
-
-	use_hp_or_mp();
+	if(me.mp < (me.max_mp-200) || (me.hp < (me.max_hp-200)))
+		use_hp_or_mp();
 
 	loot();
 	
@@ -70,7 +74,10 @@ setInterval(function(){
 	var target
 	if (!target || target.dead)
 	{
-		target=get_nearest_monster({type:"squig"}) 
+		//target=get_nearest_monster({type:"squig"}) 
+		//target=get_target_of("D3lphes")
+		if(delphes != null)
+			target=get_entity(delphes.target)
 		if (target) change_target(target);
 		else
 		{
@@ -113,6 +120,7 @@ setInterval(function(){
 	}
 	*/
 
+	/*
 	if (!is_in_range(target))
 	{	
 		if(distance(me,target) < 0) {
@@ -120,12 +128,17 @@ setInterval(function(){
 		}
 		move(target.real_x , (target.real_y+safeDistance));
 	}
-	else if (can_attack(target))
+	else if */
+	change_target(get_entity(delphes.target))
+	if (can_attack(target))
 	{
 		attack(target);
-		move(target.real_x, (target.real_y-safeDistance));
-		if(is_in_range(target,"supershot") && !is_on_cooldown("supershot") && me.mp >= G.skills.supershot.mp) {
-			use_skill("supershot",target);
+		//move(target.real_x, (target.real_y-safeDistance));
+		if(is_in_range(target,"huntersmark") && !is_on_cooldown("huntersmark") && me.mp >= 400) {
+			use_skill("huntersmark",target)
+		}
+		if(is_in_range(target,"supershot") && !is_on_cooldown("supershot") && me.mp >= 240) {
+			use_skill("supershot",target)
 		}
 	}
 

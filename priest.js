@@ -1,25 +1,48 @@
-import { checkParty } from 'http://192.168.0.95/jesse/universal.js' 
+import { check_party, empty_inventory, number_of_empty_slots } from 'http://192.168.0.95/jesse/universal.js' 
 //import * as universal from 'http://192.168.0.95/jesse/universal.js'
 
 const me = character
 var attack_mode=true
 var currentHunt="bigbird"
 
-checkParty(me);
+check_party(me);
 
 setInterval(function(){
 
 	var wrex = get_player("Wrex")
 	var garrus = get_player("Garrus")
 
+	
+	// Kind of for each loop shenanigans. Called an arrow function
+	/*
+	var number_of_empty_slots = me.items.filter((item) => {
+		return item === null
+	}).length
+	*/
+
+	var total_empty_slots = number_of_empty_slots(me.items)
+	//console.log(total_empty_slots)
+	if(total_empty_slots == 0) {
+		if(smart.moving) 
+			console.log("Still working on it")
+		else	
+			console.log("Made it to the bank")
+			empty_inventory(me)
+		//smart_move("bank", 0, -37).then(empty_inventory(me))
+		//empty_inventory(me)
+	}
+
 	if(me.rip) respawn()
 	
 	if(me.mp < (me.max_mp-200)) 
 		use_hp_or_mp();
 	
+	if((me.hp < (me.max_hp - me.attack)) && !is_on_cooldown("heal")
+		heal(me)
 	//console.log(me.attack)
-	if((wrex) && (wrex.hp < (wrex.max_hp - me.attack)) && can_use("heal")) {
-		use_skill("heal",wrex)	
+	if((wrex != null) && (wrex.hp < wrex.max_hp - me.attack) && !is_on_cooldown("heal")) {
+		heal(wrex)
+		console.log("I healed for: " + me.attack)
 	}
 	//else {
 		//send_cm("Wrex", {type: "position_request"})	
@@ -45,9 +68,10 @@ setInterval(function(){
 		if(distance(me,wrex) > 50) {
 			move(wrex.real_x + 40, wrex.real_y +40);
 		}
-
+		
 		var target=get_entity(wrex.target)
-		if (target || (target != me.target))
+		//if (target || (target != me.target))
+		if (target != null)
 		{
 			change_target(target)
 			//console.log("Wrex's Target is : " + wrex.target)

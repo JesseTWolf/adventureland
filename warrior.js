@@ -1,11 +1,11 @@
-import { checkParty } from 'http://192.168.0.95/jesse/universal.js'
+import { check_party } from 'http://192.168.0.95/jesse/universal.js'
 //import * as universal from 'http://192.168.0.95/jesse/universal.js'
 
 const me = character
 var attack_mode=true
 var currentHunt="bigbird"
 
-checkParty(me);
+check_party(me);
 
 setInterval(function(){
 
@@ -27,7 +27,7 @@ setInterval(function(){
 	var target
 	if (!target || target.dead)
 	{
-		target=get_nearest_monster({type:"squig"})
+		target=get_nearest_monster({type:"tortoise"})
 		//console.log("My target is : " + me.target)
 		if (target) change_target(target);
 		else
