@@ -14,11 +14,23 @@ setInterval(function(){
 	// Check my open space in inventory
 	var openSpace = me.items.length
 	// If have more then 5 spaces in my inventory let characters know.
+	/*
 	me.on("cm", data => {
-		if(data.name === "Laweson" && data.message.type === "open_space_request") {
-			send_cm(openSpace)
+		if(data.name === "Lawson" && data.message.type === "open_space_request") {
+			console.log(data)
+			send_cm("Garrus", {
+			"message": "open_space",
+			"value": openSpace})
 		}
 	})
+	*/
+	console.log(openSpace)
+	if(openSpace > 5) {
+		send_cm("Garrus", {
+			"message": "open_space",
+			"value": openSpace
+		})
+	}	
 
 	//send cm will send a message to anyone.
 	//Ask for position, if you get a position request on the receiving end then send a message with your position.

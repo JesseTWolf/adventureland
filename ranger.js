@@ -1,16 +1,63 @@
-import { check_party } from 'http://192.168.0.95/jesse/universal.js'	
+import { check_party, empty_inventory } from 'http://192.168.0.95/jesse/universal.js'	
+//import * as universal from 'http://192.168.0.95/jesse/universal.js'
 
 const me = character
 var attack_mode=true
 var currentHunt="bigbird"
+var merchant_space=0
 
 check_party(me);
+
+
 
 setInterval(function(){
 
 	if(me.rip) respawn()
 
+	var open_space = me.items.length
+	//console.log("Current Open Space: " + open_space)
+	if(open_space == 1)
+		empty_inventory(me)
+
+	//	console.log(open_space)
+	//	send_cm("Lawson", {type: "open_space_request"})
+	//}
+	/*
+	me.on("cm", function(data) {
+		//console.log("Hoopla:" + data.message.message)
+		if(data.message.message == "open_space") {
+			merchant_space = data.message.value
+			console.log(data.message.value)
+			
+			if(merchant_space > 1) {
+				for(var i = 2; i < merchant_space;i++) {
+					console.log("" + me.items[i])
+					//send_item("Lawsom",i,1)
+					merchant_space--
+					if(merchant_space == 0)
+						return
+				}
+			}
+		}
+	})
+	*/
+	//console.log("Merchant Space Out: " + merchant_space + "\n")
+
+	/*
+	if(merchant_space > 1) {
+		for(var i = 2; i < me.items.length;i++) {
+			send_item("Lawson",i,1);
+			merchant_space--
+			if(merchant_space == 0)
+				return;
+		}
+	}
+	*/
+
+
+
 	use_hp_or_mp();
+
 	loot();
 	
 	//send cm will send a message to anyone.

@@ -1,11 +1,11 @@
-import { check_party } from 'http://192.168.0.95/jesse/universal.js' 
+import { checkParty } from 'http://192.168.0.95/jesse/universal.js' 
 //import * as universal from 'http://192.168.0.95/jesse/universal.js'
 
 const me = character
 var attack_mode=true
 var currentHunt="bigbird"
 
-check_party(me);
+checkParty(me);
 
 setInterval(function(){
 
