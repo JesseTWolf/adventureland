@@ -23,6 +23,16 @@ setInterval(function(){
 		}
 	}
 	
+	character.on("cm", data => {
+    	if (data.name === "D3lphes" && data.message.type === "position_answer") {
+        		smart_move({
+            		x: data.message.x,
+            		y: data.message.y,
+            		map: data.message.map
+        		})
+    		}
+	})
+
 	//	console.log(open_space)
 	//	send_cm("Lawson", {type: "open_space_request"})
 	//}

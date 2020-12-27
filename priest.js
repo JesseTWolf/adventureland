@@ -25,9 +25,10 @@ setInterval(function(){
 	if(total_empty_slots == 0) {
 		if(smart.moving) 
 			console.log("Still working on it")
-		else	
+		else {
 			console.log("Made it to the bank")
 			empty_inventory(me)
+		}
 		//smart_move("bank", 0, -37).then(empty_inventory(me))
 		//empty_inventory(me)
 	}
