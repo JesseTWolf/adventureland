@@ -1,11 +1,28 @@
-import { check_party, number_of_empty_slots } from 'http://192.168.0.95/jesse/universal.js' 
+// import { check_party, number_of_empty_slots } from 'http://192.168.0.95/jesse/universal.js' 
 //import * as universal from 'http://192.168.0.95/jesse/universal.js'
+
+const { checkParty, openSpaceMessage, emptyInventory, numberOfEmptySlots} = require('./CODE/universal.js')
 
 const me = character
 
-const items_to_sell = [
-	{ name: "slimestaff", level: 0 },
-	{ name: "iceskates", level: 0 }
+let compoundingAndUpgrading = true
+let use_better_scrolls = false
+const max_upgrade_level = 8
+const max_compound_level = 3
+const upgrade_whitelist = [ 
+	'wshoes' 
+]
+
+const compound_whitelist = [ 
+	'wbook0', 'intamulet', 'stramulet', 'dexamulet', 'intearring', 
+	'strearring', 'dexearring', 'hpbelt', 'hpamulet', 'ringsj', 
+	'amuletofm', 'orbofstr', 'orbofint', 'orbofres', 'orbofhp'
+]
+
+const selling_whitelist = [ 
+	'bfur'
+	// { name: "slimestaff", level: 0 },
+	// { name: "iceskates", level: 0 },
 ]
 
 var attack_mode=true
@@ -28,10 +45,13 @@ var total_empty_slots
 
 setInterval(function(){
 
-	if(me.rip) respawn()
+	if(me.rip) {
+		respawn();
+		return;
+	}
 
 	// Check my open space in inventory
-	total_empty_slots = number_of_empty_slots(me.items)
+	total_empty_slots = numberOfEmptySlots(me.items)
 	
 	// Use update_bank_arrays function to gather all current items in the bank
 	// Then use the search_for_item function to see if a particular item is in the bank or not.
@@ -43,15 +63,25 @@ setInterval(function(){
 		console.log("Done counting items in bank")
 		print_bank_items_and_counts()
 		console.log("Done printing out bank items and counts ")
-		//pickup_specific_items("scroll0")
+		for (const element of compound_whitelist) {
+			pickup_specific_items(element)
+		}
 	}
 
 	if(selling) {
 		if(me.map != "bank")
-			//TODO Add a smartmove to the bank here before picking things up and going then going to sell.
+			// TODO Add a smartmove to the bank here before picking things up and going then going to sell.
+			await smart_move("bank", 0, -37)
 		sell_items()
 		selling=false
 	}
+
+	setInterval(function() {
+		if(compoundingAndUpgrading) {
+			compoundItems();
+		}
+	}, 1000 / 4)
+	
 
 	/*
 	count_items_in_bank()
@@ -130,17 +160,14 @@ function pickup_specific_items(item_name) {
 }
 
 function sell_items() {
-	for(var i = 0; i < character.items.length; i++) {
-		console.log(character.items[i])
-		for(var j = 0; j < items_to_sell.length;j++) {
-			console.log(items_to_sell[j])
-			if(character.items[i] != null) {
-				if(character.items[i].name === items_to_sell[j].name &&
-					character.items[i].level === items_to_sell[j].level) {
-					console.log("Going to sell: " + character.items[i].name +
+	for(let i = 0; i < character.items.length; i++) {
+		// console.log(character.items[i])
+		let charItem = character.items[i];
+		if(charItem) {
+			if (charItem && selling_whitelist.includes(charItem.name)) {
+				console.log("Going to sell: " + character.items[i].name +
 						" at level: " + character.items[i].level)
-					sell(i)
-				}
+				// sell(i);
 			}
 		}
 	}
@@ -210,4 +237,46 @@ function print_out_inventory() {
 	for (var i = 0; i < me.items.length; i++) {
 		console.log(me.items[i].name)
 	}
+}
+
+setInterval(function compoundItems() {
+	let toCompound = character.items.reduce((collection, item, index) => {
+		if (item && item.level < max_compound_level && compound_whitelist.includes(item.name)) {
+			let key = item.name + item.level
+			!collection.has(key) ? collection.set(key, [item.level, index]) : collection.get(key).push(index)
+		}
+		return collection
+	}, new Map())
+
+	var done = false;
+	for (var c of toCompound.values()) {
+		let scroll_name = use_better_scrolls && c[0] > 1 ? 'cscroll1' : 'cscroll0'
+
+		for (let i = 1; i + 2 < c.length; i += 3) {
+			let [scroll, _] = find_item(i => i.name == scroll_name);
+			if (scroll == -1) {
+			  parent.buy(scroll_name);
+			  return;
+			}
+			
+			if(!done) {
+				compound(c[i], c[i+1], c[i+2],locate_item(scroll_name)).then(function(data){
+					if(data.success) game_log("I have a +"+data.level+" accessory now!");
+					else game_log("Rip accessories, you'll be missed.");
+				});
+				done = true; 
+			}
+		  }
+	}
+},200);
+
+function find_item(filter) {
+	for (let i = 0; i < character.items.length; i++) {
+		let item = character.items[i];
+
+		if (item && filter(item))
+		return [i, character.items[i]];
+	}
+
+	return [-1, null];
 }

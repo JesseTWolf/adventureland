@@ -2,7 +2,7 @@ const me = character
 var attack_mode=true
 
 const base_url = "https://raw.githubusercontent.com/JesseTWolf/adventureland/master/main.js"
-const script_name = "Ranger"
+const script_name = "Base"
 
 function update_script() {
     fetch(base_url+"?"+Date.now()).then(resp => resp.text()).then(script => {

@@ -1,11 +1,14 @@
-import { check_party, empty_inventory, number_of_empty_slots } from 'http://192.168.0.95/jesse/universal.js'	
+// import { check_party, empty_inventory, number_of_empty_slots } from 'http://192.168.0.95/jesse/universal.js'	
 //import * as universal from 'http://192.168.0.95/jesse/universal.js'
+
+const { checkParty, openSpaceMessage, emptyInventory, numberOfEmptySlots} = require('./universal.js')
 
 const me = character
 var attack_mode=true
 var currentHunt="bigbird"
+var target
 
-check_party(me);
+checkParty(me);
 
 setInterval(function(){
 
@@ -13,13 +16,13 @@ setInterval(function(){
 
 	if(me.rip) respawn()
 
-	var total_empty_slots = number_of_empty_slots(me.items)
+	var total_empty_slots = numberOfEmptySlots(me.items)
 	if(total_empty_slots == 0) {
 		if(smart.moving)
 			console.log("Still working on it")
 		else {
 			console.log("Made it to the bank")
-			empty_inventory(me)
+			emptyInventory(me)
 		}
 	}
 	
@@ -33,6 +36,27 @@ setInterval(function(){
     		}
 	})
 
+	/*
+	game.on("event", function(data) {
+		if(data.name == "grinch") {
+			let kane = get_entity_by_name('Kane')
+		}
+		else if(data.name == 'snowman') {
+			smart_move(data)
+		}
+	})
+	*/
+	/*
+	if(parent.S.hasOwnProperty('grinch') && parent.S['grinch'].live) {
+		let kane = get_entity_by_name('Kane')
+		if (kane) {
+			await smart_move(kane)
+		}
+		else {
+			await smare_move(parent.S['grinch'])
+		}
+	}
+	*/
 	//	console.log(open_space)
 	//	send_cm("Lawson", {type: "open_space_request"})
 	//}
@@ -69,7 +93,7 @@ setInterval(function(){
 	*/
 
 
-	if(me.mp < (me.max_mp-200) || (me.hp < (me.max_hp-200)))
+	if(me.mp < (me.max_mp) || (me.hp < (me.max_hp-200)))
 		use_hp_or_mp();
 
 	loot();
@@ -80,11 +104,16 @@ setInterval(function(){
 
 	if (!attack_mode || character.rip) return;
 	//if (!attack_mode || character.rip || is_moving(character)) return;
-
-	var target
-	if (!target || target.dead)
+	
+	let target = get_target()
+	//console.log(target)
+	if (target == null)
 	{
-		//target=get_nearest_monster({type:"squig"}) 
+		/*
+		if(!smart.moving)
+			smart_move({x: -550,y: -1426, map: "desertland"})
+		*/
+		target=get_nearest_monster({type:"tortoise"})
 		//target=get_target_of("D3lphes")
 		if(delphes != null)
 			target=get_entity(delphes.target)
@@ -97,12 +126,12 @@ setInterval(function(){
 		}
 	}
 	
+	
 	// Figure out a safe distance from the monster. If not at least 50 will set to 50.
 	var safeDistance = (target.range + 20)
 	if (safeDistance < 100) {
 		safeDistance = 100;
 	}
-
 	/*
 	// If target is to the left in respect to character
 	var targetX = target.real_x
@@ -121,7 +150,8 @@ setInterval(function(){
 	console.log("tY - mY : " + (targetY - myY))
 
 	console.log("\n")
-
+	*/
+	/*
 	//In quadrant 1
 	if((myX > targetX) & (myY > targetY)) {
 		console.log("myX < targetX : " + myX + " < " + targetX);
@@ -129,19 +159,45 @@ setInterval(function(){
 		console.log("\n")
 	}
 	*/
-
-	/*
 	if (!is_in_range(target))
 	{	
 		if(distance(me,target) < 0) {
 			
 		}
-		move(target.real_x , (target.real_y+safeDistance));
+		else
+			move(target.real_x , (target.real_y+safeDistance));
 	}
-	else if */
-	change_target(get_entity(delphes.target))
-	if (can_attack(target))
+	//change_target(get_entity(delphes.target))
+	//if(target.target) {
+	else if (can_attack(target))
 	{
+		var x_center
+		var y_center
+		const radius = me.range/1.1
+		const step = 0.35
+		var  mobAngle = Math.atan2(character.y-target.y, character.x-target.x)
+		const angle_speed = character.speed/radius *0.25
+
+		if(!is_on_cooldown(attack)) {
+			set_message("Attacking")
+			attack(target)
+		}
+
+		if(distance(character,target)<(target.attack_range*1.5)) {
+			x_center = (target.x - (target.x-character.x)*2)	
+			y_center = (target.y - (target.y-character.y)*2)
+		}
+		else {
+			x_center = target.x
+			y_center = target.y
+		}
+
+		var next_x = x_center + radius * Math.cos(mobAngle + angle_speed)
+		var next_y = y_center + radius * Math.sin(mobAngle + angle_speed)
+
+		move(next_x,next_y)
+		mobAngle += step
+
 		attack(target);
 		//move(target.real_x, (target.real_y-safeDistance));
 		if(is_in_range(target,"huntersmark") && !is_on_cooldown("huntersmark") && me.mp >= 400) {
@@ -151,6 +207,7 @@ setInterval(function(){
 			use_skill("supershot",target)
 		}
 	}
+	//}
 
 },1000/4); // Loops every 1/4 seconds.
 
