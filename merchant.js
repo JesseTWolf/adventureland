@@ -1,246 +1,249 @@
-// import { check_party, number_of_empty_slots } from 'http://192.168.0.95/jesse/universal.js' 
-//import * as universal from 'http://192.168.0.95/jesse/universal.js'
+import { 
+    keep_whitelist, 
+    last_use_hp_potion,
+    last_use_mp_potion,
+    last_respawn,
+    party_list, 
+    pot_stack,
+    potion_data, 
+    scroll_data,
+    sell_whitelist
+} from "./universal.js";
 
-const { checkParty, openSpaceMessage, emptyInventory, numberOfEmptySlots} = require('./CODE/universal.js')
+import {
+    check_party, 
+    distance_to_target, 
+    empty_inventory, 
+    find_item, 
+    find_and_move_to_leader, 
+    find_viable_targets, 
+    player_in_party,
+    handle_inventory_farmer, 
+    handle_monsterhunts, 
+    handle_party, 
+    handle_respawn, 
+    handle_use_potions, 
+    number_of_empty_slots, 
+    open_space_message, 
+    sell_items, 
+    send_to_merchant, 
+    store_pots, 
+    store_position, 
+    retrieve_position
+} from "./universal.js"
 
-const me = character
+const upgrade_whitelist = [
+	'pyjamas', 'bunnyears', 'carrotsword', 'firestaff', 'fireblade', 
+    'sshield', 'shield', 'gloves', 'coat', 'helmet', 'pants', 
+    'gloves1', 'coat1', 'shoes1', 'harbinger', 'oozingterror', 
+    'bataxe', 'spear', 'xmaspants', 'xmassweater', 'xmashat',
+    'xmasshoes', 'xmace', 'mittens', 'ornamentstaff', 'candycanesword',
+    'warmscarf', 't2bow', 'pmace', 'basher', 'harmor',
+    'hgloves', 'wingedboots', 'gcape', 'iceskates', 'wattire',
+    'wshoes', 'wcap', 'wgloves', 'pants1', 'stinger', 'swifty',
+    'snowflakes', 'helmet1', 'merry',
 
-let compoundingAndUpgrading = true
-let use_better_scrolls = false
-const max_upgrade_level = 8
-const max_compound_level = 3
-const upgrade_whitelist = [ 
-	'wshoes' 
-]
+    'shoes'
+];
 
 const compound_whitelist = [ 
 	'wbook0', 'intamulet', 'stramulet', 'dexamulet', 'intearring', 
 	'strearring', 'dexearring', 'hpbelt', 'hpamulet', 'ringsj', 
-	'amuletofm', 'orbofstr', 'orbofint', 'orbofres', 'orbofhp'
-]
+	'amuletofm', 'orbofstr', 'orbofint', 'orbofres', 'orbofhp',
+    'vitring', 'intring', 'strring', 'dexring'
+];
 
-const selling_whitelist = [ 
-	'bfur'
-	// { name: "slimestaff", level: 0 },
-	// { name: "iceskates", level: 0 },
-]
+const keep_whitelist_merchant = [
+    potion_data[0], potion_data[1], scroll_data[0], scroll_data[1],
+    scroll_data[2], scroll_data[3], 'stand0', 'computer'
+];
 
-var attack_mode=true
-var currentHunt="bigbird"
-var acceptingItems=false
+const max_upgrade_level = 5;
+const max_compound_level = 3;
+let compoundingAndUpgrading = true;
+let use_better_scrolls = false;
 
-var gabrielle_items
-var gabriella_items
-var ledia_items
-var lidia_items
+// Shrinks the global chat down to super tiny.
+parent.document.querySelector("#chatlog").style.height = "20px"
 
-var working=false
-var selling=true
+// initiate_code();
+// const wrex = get_player("Wrex");
+// const garrus = get_player("Garrus");
+// var mordin = get_player("Mordin");
+// var lawson = get_player("Lawson");
 
-var bank_items
-var bank_counts
-
-var total_empty_slots
-
-
-setInterval(function(){
-
-	if(me.rip) {
-		respawn();
-		return;
-	}
-
-	// Check my open space in inventory
-	total_empty_slots = numberOfEmptySlots(me.items)
-	
-	// Use update_bank_arrays function to gather all current items in the bank
-	// Then use the search_for_item function to see if a particular item is in the bank or not.
-	
-	//console.log(working)
-	if(!working && me.map == "bank") {
-		console.log("Inside of if")
-		count_items_in_bank()
-		console.log("Done counting items in bank")
-		print_bank_items_and_counts()
-		console.log("Done printing out bank items and counts ")
-		for (const element of compound_whitelist) {
-			pickup_specific_items(element)
-		}
-	}
-
-	if(selling) {
-		if(me.map != "bank")
-			// TODO Add a smartmove to the bank here before picking things up and going then going to sell.
-			await smart_move("bank", 0, -37)
-		sell_items()
-		selling=false
-	}
-
-	setInterval(function() {
-		if(compoundingAndUpgrading) {
-			compoundItems();
-		}
-	}, 1000 / 4)
-	
-
-	/*
-	count_items_in_bank()
-	for(var i = 0; i < bank_items.length;i++) {
-		console.log(bank_items[i] + " : " + bank_counts[i])
-	}
-	*/
-	// pack is the actual bank character. Corresponds to character.bank.
-	// str is the slot inside of the bank. 0 being the first one and 41 being the last
-	// inv being -1 means put it anywhere where there is an empty slot. If you put a a number it will instead swap with that item.
-	//parent.socket.emit("bank", { operation: "swap", pack: "items0" })
-	
-	//TODO: Use locate_item method to find items in my inventory.
-	//
-	//
-
-
-	// If have more then 5 spaces in my inventory let characters know.
-	/*
-	me.on("cm", data => {
-		if(data.name === "Lawson" && data.message.type === "open_space_request") {
-			console.log(data)
-			send_cm("Garrus", {
-			"message": "open_space",
-			"value": openSpace})
-		}
-	})
-	*/
-	/*
-	console.log(openSpace)
-	if(openSpace > 5) {
-		send_cm("Garrus", {
-			"message": "open_space",
-			"value": openSpace
-		})
-	}
-	*/
-
-	//send cm will send a message to anyone.
-	//Ask for position, if you get a position request on the receiving end then send a message with your position.
-	
-
-	if (!attack_mode || character.rip || is_moving(me)) return;
-	//if (!attack_mode || character.rip || is_moving(character)) return;
-
-},1000/4); // Loops every 1/4 seconds.
-
-
-function update_bank_arrays() {
-	gabrielle_items = character.bank.items0
-	gabriella_items = character.bank.items1
-	ledia_items = character.bank.items2
-	lidia_items = character.bank.items3
+if(!character.party) {
+    send_party_request("D3lphes");
 }
 
-function pickup_specific_items(item_name) {
-	if(bank_items.indexOf(item_name) != -1) {
-		for(var i = 0; i < 42;i++) {
-			if(gabrielle_items[i] != null)
-				if(gabrielle_items[i].name === item_name)
-					parent.socket.emit("bank", { operation: "swap", pack: "items0", str: i, inv: -1})
-			if(gabriella_items[i] != null)
-				if(gabriella_items[i].name === item_name)
-					parent.socket.emit("bank", { operation: "swap", pack: "items1", str: i, inv: -1})
-			if(ledia_items[i] != null)
-				if(ledia_items[i].name === item_name) 
-					parent.socket.emit("bank", { operation: "swap", pack: "items2", str:i, inv: -1})
-			if(lidia_items[i] != null) 
-				if(lidia_items[i].name === item_name)
-					parent.socket.emit("bank", { operation: "swap", pack: "items3", str:i, inv: -1})	
-		}
-	}
-	// Update counts for in the bank.
-	// TODO: Figure out a cleaner way to do this instead of wiping out the arrays completely and refilling.
-	count_items_in_bank()
+setInterval(function() {
+    find_and_move_to_leader();
+    store_position();
+    check__parties_pots();
+    // custom function that uses potions based on values we define. Currently smallest potions.
+    handle_use_potions(200, 300);
+    // open_close_stand();
+    // handle_party();
+    loot();
+    // provide_luck();
+    handle_upgrade_and_compound();
+    handle_inventory_merchant();
+    handle_respawn();
+}, 250); // 1/4th second (250 miliseconds)
+
+function check__parties_pots() {
+    for(let i = 1; i  < party_list.length; i++) {
+        // if(party_list[i] === 'Garrus') {
+        //     console.log(parseInt(localStorage.getItem(party_list[i]+'MPots'), 10) < 50);
+        //     console.log(quantity('mpot0') >= 200);
+        // }
+        if(parseInt(localStorage.getItem(party_list[i]+'MPots'), 10) < 50 && quantity('mpot0') >= 200)  {
+            // find the slot of the item we were looking up
+            var slot = locate_item('mpot0');
+            // send the item to the merchant
+            send_item(party_list[i], slot, 200);
+        }
+        else if(parseInt(localStorage.getItem(party_list[i]+'HPots'), 10) < 50 && quantity('hpot0') >= 200) {
+            // find the slot of the item we were looking up
+            var slot = locate_item('hpot0');
+            // send the item to the merchant
+            send_item(party_list[i], slot, 200);
+        }
+    }
 }
 
-function sell_items() {
-	for(let i = 0; i < character.items.length; i++) {
-		// console.log(character.items[i])
-		let charItem = character.items[i];
-		if(charItem) {
-			if (charItem && selling_whitelist.includes(charItem.name)) {
-				console.log("Going to sell: " + character.items[i].name +
-						" at level: " + character.items[i].level)
-				// sell(i);
-			}
-		}
-	}
+function open_close_stand() {
+    if(character.ctype != 'merchant') return;
+    if(character.moving) {
+        // we close the stand with a socket emit
+        parent.socket.emit('merchant', { close: 1});
+    } else {
+        // we open the stand, and have to use the 'locate_item(name)' function to locate the slot the stand is in
+        parent.socket.emit('merchant', { num: locate_item('stand0') });
+    }
 }
 
-function count_items_in_bank() {
-	update_bank_arrays()
-	bank_items = []
-	bank_counts = []
-	var item
+function handle_inventory_merchant() {
+    sell_items_as_merchant();
+    var hpot_amt = quantity(potion_data[0]);
+    var mpot_amt = quantity(potion_data[1]);
+    // var stack_amt = potion_data[2];
 
-	for(var i = 0; i < 42;i++) {i
-		//console.log("Before Gabrielle " + i)
-		if(gabrielle_items[i] != null) {
-			item = gabrielle_items[i].name
-			//console.log(item)
-			
-			if(bank_items.indexOf(item) === -1) {
-				bank_items.push(item)
-				bank_counts.push(1)
-			}
-			else
-				bank_counts[bank_items.indexOf(item)]++
-		}
-		if(gabriella_items[i] != null) {
-			item = gabriella_items[i].name
+    if(hpot_amt < 1000) {
+        var hpot_buy = 9999 - hpot_amt;
+        buy_with_gold(potion_data[0], hpot_buy); 
+    }
 
-			if(bank_items.indexOf(item) === -1) {
-				bank_items.push(item)
-				bank_counts.push(1)
-			}
-			else
-				bank_counts[bank_items.indexOf(item)]++
-		}
-		if(ledia_items[i] != null) {
-			item = ledia_items[i].name
-
-			if(bank_items.indexOf(item) === -1) {
-				bank_items.push(item)
-				bank_counts.push(1)
-			}
-			else
-				bank_counts[bank_items.indexOf(item)]++
-		}
-		if(lidia_items[i] != null) {
-			item = lidia_items[i].name
-
-			if(bank_items.indexOf(item) === -1) {
-				bank_items.push(item)
-				bank_counts.push(1)
-			}
-			else
-				bank_counts[bank_items.indexOf(item)]++
-		}
-	}
-	console.log("Done")
-	working = true
+    if(mpot_amt < 1000) {
+        var mpot_buy = 9999 - mpot_amt;
+        buy_with_gold(potion_data[1], mpot_buy); 
+    }
 }
 
-function print_bank_items_and_counts() {
-	for (var i = 0; i < bank_items.length;i++) {
-		console.log(bank_items[i] + " : " + bank_counts[i])
-	}
+// function provide_luck() {
+//     if (parent.party_list && character.mp > G.skills.mluck.mp && // Enough mana to cast it?
+//     can_use('mluck')) {
+//         parent.party_list.forEach(element => {
+//             if(distance(character, get_player(element)) < G.skills.mluck.range &&
+//                 !get_player(element).s.mluck) {
+//                 // log('Buffing [' + element + "] with Merchant's Luck", 'red');
+//                 use_skill('mluck', get_player(element));
+//             }
+//         });
+//       }
+// }
+
+function initiate_code() {
+    if(character.name == party_list[0]) {
+        start_character(party_list[1], 'Farmer');
+        start_character(party_list[2], 'Farmer');
+        start_character(party_list[3], 'Farmer');
+    }
 }
 
-function print_out_inventory() {
-	for (var i = 0; i < me.items.length; i++) {
-		console.log(me.items[i].name)
-	}
+// var last_upgrade_or_compound = null;
+function handle_upgrade_and_compound() {
+    // setInterval(function() {
+        if(parent != null && parent.socket != null && character.bank == null) {
+            // last_upgrade_or_compound === null || new Date() - last_upgrade_or_compound <= 10000) {
+		    upgrade_items();
+		    compound_items();
+	    }
+    // }, 10000);
 }
 
-setInterval(function compoundItems() {
-	let toCompound = character.items.reduce((collection, item, index) => {
+// var last_upgrade = null;
+async function upgrade_items() {
+    let upgrade_scroll_slot;
+    let upgrade_item_slot;
+    // var done = true;
+    // if(last_upgrade_or_compound === null || new Date() - last_upgrade_or_compound <= 20000) {
+        // game_log("Trying to Upgrade");
+        for (let i = 0; i < character.items.length; i++) {
+            let c = character.items[i];
+            if (c && upgrade_whitelist.includes(c.name) && c.level < max_upgrade_level) {
+                let grades = get_grade(c);
+                let scrollname;
+    
+                // let scroll_name = use_better_scrolls && c[0] > 1 ? 'cscroll1' : 'cscroll0'
+                if (c.level < grades[0]) {
+                    scrollname = 'scroll0';
+                } else if (c.level < grades[1]) {
+                    scrollname = 'scroll1';
+                } else {
+                    scrollname = 'scroll2';
+                }
+                
+                let [scroll_slot, scroll] = find_item(i => i.name == scrollname);
+                upgrade_scroll_slot = scroll_slot;
+                if (!scroll) {
+                    parent.buy(scrollname, 50);
+                    return;
+                }
+    
+                // if(last_upgrade == null || new Date() - last_upgrade >= parent.G.skills.massproduction.cooldown * 2 && can_use('massproduction')) {
+                    // use_skill('massproduction');
+                // if(!character.q.upgrade) {
+    
+                    // last_upgrade = new Date();
+                    // parent.socket.emit('upgrade', {
+                    //     item_num: i,
+                    //     scroll_num: scroll_slot,
+                    //     offering_num: null,
+                    //     clevel: c.level
+                    // });
+                // }
+                        
+                // }
+                // if(!character.q.upgrade) {
+                    // && last_upgrade_or_compound === null || new Date() - last_upgrade_or_compound <= 20000) {
+                    if(can_use('massproduction') && !is_on_cooldown('massproduction')) {
+                        use_skill('massproduction');
+                    }
+                    // done = false;
+                    await upgrade(i, upgrade_scroll_slot).then(function(data){
+                        if(data.success) game_log("I have a +"+data.level+" armor/weapon now!");
+                        else game_log("Rip armor/weapon, you'll be missed.");
+                    });
+                    // last_upgrade_or_compound = new Date();
+                    // break;
+                // }
+                // break;
+            }
+
+            // if(last_upgrade_or_compound === null || new Date() - last_upgrade_or_compound <= 20000) {
+            //     break;
+            // }
+            // if(!character.q.upgrade) {
+            //     break;
+            // }
+        }
+    // }
+    // console.log(upgrade_item_slot + " " + upgrade_scroll_slot);
+  }
+
+async function compound_items() {
+    let toCompound = character.items.reduce((collection, item, index) => {
 		if (item && item.level < max_compound_level && compound_whitelist.includes(item.name)) {
 			let key = item.name + item.level
 			!collection.has(key) ? collection.set(key, [item.level, index]) : collection.get(key).push(index)
@@ -249,34 +252,50 @@ setInterval(function compoundItems() {
 	}, new Map())
 
 	var done = false;
-	for (var c of toCompound.values()) {
-		let scroll_name = use_better_scrolls && c[0] > 1 ? 'cscroll1' : 'cscroll0'
+    
+        for (var c of toCompound.values()) {
+            let scroll_name = use_better_scrolls && c[0] > 1 ? 'cscroll1' : 'cscroll0'
 
-		for (let i = 1; i + 2 < c.length; i += 3) {
-			let [scroll, _] = find_item(i => i.name == scroll_name);
-			if (scroll == -1) {
-			  parent.buy(scroll_name);
-			  return;
-			}
-			
-			if(!done) {
-				compound(c[i], c[i+1], c[i+2],locate_item(scroll_name)).then(function(data){
-					if(data.success) game_log("I have a +"+data.level+" accessory now!");
-					else game_log("Rip accessories, you'll be missed.");
-				});
-				done = true; 
-			}
-		  }
-	}
-},200);
+        // if(last_upgrade_or_compound === null || new Date() - last_upgrade_or_compound <= 20000) {
+            for (let i = 1; i + 2 < c.length; i += 3) {
+                let [scroll, _] = find_item(i => i.name == scroll_name);
+                if (scroll == -1) {
+                parent.buy(scroll_name);
+                return;
+                }
+                
+                if(!character.q.compound) {
+                    // && last_upgrade_or_compound === null || new Date() - last_upgrade_or_compound <= 20000) {
+                    if(can_use('massproduction') && !is_on_cooldown('massproduction')) {
+                        use_skill('massproduction');
+                    }
+                    
+                    await compound(c[i], c[i+1], c[i+2],locate_item(scroll_name)).then(function(data){
+                        if(data.success) game_log("I have a +"+data.level+" accessory now!");
+                        else game_log("Rip accessories, you'll be missed.");
+                    });
+                    // last_upgrade_or_compound = new Date();
+                }
+            }
+        // }
+    }
+}
 
-function find_item(filter) {
-	for (let i = 0; i < character.items.length; i++) {
-		let item = character.items[i];
+function get_grade(item) {
+    return parent.G.items[item.name].grades;
+}
 
-		if (item && filter(item))
-		return [i, character.items[i]];
-	}
-
-	return [-1, null];
+export function sell_items_as_merchant() {
+    for(let i in character.items) {
+        let slot = character.items[i];
+        if(slot != null) {
+            let item_name = slot.name;
+            if(sell_whitelist.includes(item_name) && !(keep_whitelist_merchant.includes(item_name))) {
+                if(!slot.p) { // is not shiny
+                    sell(i, 9999);
+                    // console.log('Going to sell ' + i);
+                }
+            }
+        }
+    }
 }
